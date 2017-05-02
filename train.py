@@ -36,10 +36,10 @@ FLAGS = flags.FLAGS
 
 if __name__ == "__main__":
   # Dataset flags.
-  flags.DEFINE_string("train_dir", "gs://youtube_kaggle_frame_model",
+  flags.DEFINE_string("train_dir", "/tmp/yt8m_model/",
                       "The directory to save the model files in.")
   flags.DEFINE_string(
-      "train_data_pattern", 'gs://youtube_kaggle/train*.tfrecord',
+      "train_data_pattern", "",
       "File glob for the training dataset. If the files refer to Frame Level "
       "features (i.e. tensorflow.SequenceExample), then set --reader_type "
       "format. The (Sequence)Examples are expected to have 'rgb' byte array "
@@ -60,7 +60,7 @@ if __name__ == "__main__":
       "Which architecture to use for the model. Models are defined "
       "in models.py.")
   flags.DEFINE_bool(
-      "start_new_model", True,
+      "start_new_model", False,
       "If set, this will not resume from a checkpoint and will instead create a"
       " new model instance.")
 
@@ -81,7 +81,7 @@ if __name__ == "__main__":
   flags.DEFINE_float("learning_rate_decay_examples", 4000000,
                      "Multiply current learning rate by learning_rate_decay "
                      "every learning_rate_decay_examples.")
-  flags.DEFINE_integer("num_epochs", 3,
+  flags.DEFINE_integer("num_epochs", 5,
                        "How many passes to make over the dataset before "
                        "halting training.")
   flags.DEFINE_integer("max_steps", None,
