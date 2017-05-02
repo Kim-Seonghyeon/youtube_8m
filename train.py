@@ -65,7 +65,7 @@ if __name__ == "__main__":
       " new model instance.")
 
   # Training flags.
-  flags.DEFINE_integer("batch_size", 16,
+  flags.DEFINE_integer("batch_size", 2,
                        "How many examples to process per batch for training.")
   flags.DEFINE_string("label_loss", "CrossEntropyLoss",
                       "Which loss function to use for training the model.")
