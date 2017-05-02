@@ -563,8 +563,7 @@ def get_reader():
   feature_names, feature_sizes = utils.GetListOfFeatureNamesAndSizes(
       FLAGS.feature_names, FLAGS.feature_sizes)
 
-  if FLAGS.
-  :
+  if FLAGS.frame_features:
     reader = readers.YT8MFrameFeatureReader(
         feature_names=feature_names, feature_sizes=feature_sizes)
   else:
