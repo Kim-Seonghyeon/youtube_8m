@@ -40,7 +40,7 @@ flags.DEFINE_integer("dbof_hidden_size", 1024,
 flags.DEFINE_string("dbof_pooling_method", "max",
                     "The pooling method used in the DBoF cluster layer. "
                     "Choices are 'average' and 'max'.")
-flags.DEFINE_string("video_level_classifier_model", "MoeModel",
+flags.DEFINE_string("video_level_classifier_model", "LogisticModel",
                     "Some Frame-Level models can be decomposed into a "
                     "generalized pooling operation followed by a "
                     "classifier layer")
