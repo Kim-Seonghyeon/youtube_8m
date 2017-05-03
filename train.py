@@ -36,7 +36,7 @@ FLAGS = flags.FLAGS
 
 if __name__ == "__main__":
   # Dataset flags.
-  flags.DEFINE_string("train_dir", 'gs://youtube_kaggle_frame_model',
+  flags.DEFINE_string("train_dir", 'gs://youtube_kaggle_model_moe',
                       "The directory to save the model files in.")
   flags.DEFINE_string(
       "train_data_pattern", 'gs://youtube_kaggle/train*.tfrecord',
