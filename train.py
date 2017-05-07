@@ -60,7 +60,7 @@ if __name__ == "__main__":
       "Which architecture to use for the model. Models are defined "
       "in models.py.")
   flags.DEFINE_bool(
-      "start_new_model", True,
+      "start_new_model", False,
       "If set, this will not resume from a checkpoint and will instead create a"
       " new model instance.")
 
