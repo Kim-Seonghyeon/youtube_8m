@@ -50,7 +50,7 @@ if __name__ == "__main__":
 
   # Model flags.
   flags.DEFINE_bool(
-      "frame_features", True,
+      "frame_features", False,
       "If set, then --train_data_pattern must be frame-level features. "
       "Otherwise, --train_data_pattern must be aggregated video-level "
       "features. The model must also be set appropriately (i.e. to read 3D "
@@ -84,7 +84,7 @@ if __name__ == "__main__":
   flags.DEFINE_integer("num_epochs", 5,
                        "How many passes to make over the dataset before "
                        "halting training.")
-  flags.DEFINE_integer("max_steps", 100,
+  flags.DEFINE_integer("max_steps", None,
                        "The maximum number of iterations of the training loop.")
   flags.DEFINE_integer("export_model_steps", 1000,
                        "The period, in number of steps, with which the model "
