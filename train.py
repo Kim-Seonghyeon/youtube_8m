@@ -36,10 +36,10 @@ FLAGS = flags.FLAGS
 
 if __name__ == "__main__":
   # Dataset flags.
-  flags.DEFINE_string("train_dir", 'gs://youtube_kaggle_model_lstm',
+  flags.DEFINE_string("train_dir", 'IDEA/seminar/youtube/youtube_8m',
                       "The directory to save the model files in.")
   flags.DEFINE_string(
-      "train_data_pattern", 'gs://youtube_kaggle/traina0.tfrecord',
+      "train_data_pattern", '~/data/yt8m/trian*.tfrecord',
       "File glob for the training dataset. If the files refer to Frame Level "
       "features (i.e. tensorflow.SequenceExample), then set --reader_type "
       "format. The (Sequence)Examples are expected to have 'rgb' byte array "
