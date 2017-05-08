@@ -39,7 +39,7 @@ if __name__ == "__main__":
   flags.DEFINE_string("train_dir", '/home/ksh/IDEA/seminar/youtube/youtube_8m',
                       "The directory to save the model files in.")
   flags.DEFINE_string(
-      "train_data_pattern", '/home/ksh/data/yt8m/train*.tfrecord',
+      "train_data_pattern", '/home/ksh/data/yt8m_frame/train*.tfrecord',
       "File glob for the training dataset. If the files refer to Frame Level "
       "features (i.e. tensorflow.SequenceExample), then set --reader_type "
       "format. The (Sequence)Examples are expected to have 'rgb' byte array "
@@ -50,13 +50,13 @@ if __name__ == "__main__":
 
   # Model flags.
   flags.DEFINE_bool(
-      "frame_features", False,
+      "frame_features", True,
       "If set, then --train_data_pattern must be frame-level features. "
       "Otherwise, --train_data_pattern must be aggregated video-level "
       "features. The model must also be set appropriately (i.e. to read 3D "
       "batches VS 4D batches.")
   flags.DEFINE_string(
-      "model", "MoeModel",
+      "model", "FrameLevelLogisticModel",
       "Which architecture to use for the model. Models are defined "
       "in models.py.")
   flags.DEFINE_bool(
