@@ -243,6 +243,7 @@ def evaluation_loop(video_id_batch, prediction_batch, label_batch, loss,
             summary_scope="Eval")
         logging.info("examples_processed: %d | %s", examples_processed,
                      iterinfo)
+        logging.info(labels_val[0])
 
     except tf.errors.OutOfRangeError as e:
       logging.info(
