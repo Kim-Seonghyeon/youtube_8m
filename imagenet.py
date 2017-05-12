@@ -15,7 +15,7 @@ class Vgg16:
             
 
 
-        print("npy file loaded")
+        print "npy file loaded"
 
     def build(self, rgb):
         """
