@@ -124,8 +124,9 @@ class Vgg16:
     def get_fc_weight(self, name):
         return tf.constant(self.data_dict[name][0], name="weights")
 
+logging.info("22")
 files = gfile.Glob("gs://ksh_imagenet/ILSVRC/Data/DET/test/*.jpeg")
-logging.info(files+"22")
+logging.info(files)
 out_file = gfile.Open("gs://ksh_imagenet/vgg16/feature.csv", "w+")
 out_file.write("filename,"+",".join(["feature"+str(i) for i in range(1,4097)])+"\n")
 filename_queue = tf.train.string_input_producer(files) #  list of files to read
