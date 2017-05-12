@@ -125,7 +125,7 @@ class Vgg16:
         return tf.constant(self.data_dict[name][0], name="weights")
 
 logging.info("22")
-files = gfile.Glob("gs://ksh_imagenet/ILSVRC/Data/DET/test/*.jpeg")
+files = gfile.Glob("gs://ksh_imagenet/ILSVRC/Data/DET/test/ILSVRC2016_test_00000001.JPEG")
 logging.info(files)
 out_file = gfile.Open("gs://ksh_imagenet/vgg16/feature.csv", "w+")
 out_file.write("filename,"+",".join(["feature"+str(i) for i in range(1,4097)])+"\n")
