@@ -4,6 +4,8 @@ from tensorflow import gfile
 import numpy as np
 import tensorflow as tf
 import time
+from tensorflow import logging
+
 
 VGG_MEAN = [103.939, 116.779, 123.68]
 
@@ -123,6 +125,7 @@ class Vgg16:
         return tf.constant(self.data_dict[name][0], name="weights")
 
 files = gfile.Glob("gs://ksh_imagenet/ILSVRC/Data/DET/test/*.jpeg")
+logging.info(files[0])
 out_file = gfile.Open("gs://ksh_imagenet/vgg16/feature.csv", "w+")
 out_file.write("filename,"+",".join(["feature"+str(i) for i in range(1,4097)])+"\n")
 filename_queue = tf.train.string_input_producer(files) #  list of files to read
