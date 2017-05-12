@@ -11,7 +11,7 @@ f=tf.gfile.FastGFile(os.path.join("/home/shkim930923", 'classify_image_graph_def
 graph_def = tf.GraphDef()
 graph_def.ParseFromString(f.read())
 _ = tf.import_graph_def(graph_def, name='')
- sess = tf.Session()
+sess = tf.Session()
 
 image_data = tf.gfile.FastGFile("gs://ksh_imagenet/ILSVRC/Data/DET/test/ILSVRC2016_test_00000001.JPEG", 'rb').read()
 # 몇가지 유용한 텐서들:
