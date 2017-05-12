@@ -39,7 +39,7 @@ if __name__ == "__main__":
   flags.DEFINE_string("train_dir", '/home/ksh/IDEA/seminar/youtube/youtube_8m',
                       "The directory to save the model files in.")
   flags.DEFINE_string(
-      "train_data_pattern", '/home/ksh/data/yt8m_frame/train*.tfrecord',
+      "train_data_pattern", 'gs://youtube8m-ml-us-east1/1/video_level/train/train*.tfrecord',
       "File glob for the training dataset. If the files refer to Frame Level "
       "features (i.e. tensorflow.SequenceExample), then set --reader_type "
       "format. The (Sequence)Examples are expected to have 'rgb' byte array "
