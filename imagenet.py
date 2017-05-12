@@ -13,8 +13,8 @@ batch_size=10
 reach_last_file=False
 idx = np.array([0,batch_size])
 
-files = gfile.Glob("C:/Users/Administrator/Downloads/ILSVRC2016_DET_test_new.tar/ILSVRC/Data/DET/test/*.jpeg")
-out_file = gfile.Open("C:/Users/Public/Pictures/Sample Pictures/aa.csv", "w+")
+files = gfile.Glob("gs://ksh_imagenet/ILSVRC/Data/DET/test/*.jpeg")
+out_file = gfile.Open("gs://ksh_imagenet/feature.jpeg", "w+")
 
 out_file.write("filename,"+",".join(["feature"+str(i) for i in range(1,4097)])+"\n")
 while not reach_last_file:
@@ -31,7 +31,8 @@ while not reach_last_file:
     block4_pool_features = model.predict(x)
     for i in range(len(files0)):
         out_file.write(files0[i]+","+ ",".join(["%f" % i for i in block4_pool_features[i]]) + "\n")
-
+    logging.info("%i processed", idx[1])
+    
     idx += batch_size
     idx[1] = min([idx[1],len(files)])
 out_file.close()
