@@ -13,7 +13,7 @@ class Vgg16:
     def __init__(self, vgg16_npy_path=None):
         if vgg16_npy_path is None:
 
-            path = "/home/shkim930923/vgg16.npy\?dl\=0"
+            path = "/home/shkim930923/vgg16.npy?dl=0"
             vgg16_npy_path = path
             print(path)
 
