@@ -12,9 +12,9 @@ VGG_MEAN = [103.939, 116.779, 123.68]
 class Vgg16:
     def __init__(self, vgg16_npy_path=None):
         if vgg16_npy_path is None:
-            path = "gs://ksh_imagenet/ILSVRC/Data/DET/test/ILSVRC2016_test_00000001.JPEG"
-            vgg16_npy_path = path
-            print(path)
+            path = "gs://ksh_imagenet/vgg16/vgg16.npy"
+            vgg16_npy_path = gfile.Glob(path)
+            print(vgg16_npy_path)
 
         self.data_dict = np.load(vgg16_npy_path, encoding='latin1').item()
         print("npy file loaded")
