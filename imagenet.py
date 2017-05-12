@@ -1,4 +1,4 @@
-
+from tensorflow import logging
 from tensorflow import gfile
 from keras.applications.vgg19 import VGG19
 from keras.preprocessing import image
