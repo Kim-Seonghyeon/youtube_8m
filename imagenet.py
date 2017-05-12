@@ -12,9 +12,7 @@ VGG_MEAN = [103.939, 116.779, 123.68]
 class Vgg16:
     def __init__(self, vgg16_npy_path=None):
         if vgg16_npy_path is None:
-
-            path = os.path.abspath(os.path.join("gs://ksh_imagenet/vgg16", os.pardir))
-            path = os.path.join(path, "vgg16.npy")
+            path = "gs://ksh_imagenet/vgg16/vgg16.npy"
             vgg16_npy_path = path
             print(path)
 
