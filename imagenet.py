@@ -22,6 +22,8 @@ predictions = sess.run(softmax_tensor,
 predictions = np.squeeze(predictions)
 logging.info(predictions.shape)
 logging.info(predictions)
+print(predictions.shape)
+print(predictions)
 
 
 
