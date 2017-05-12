@@ -1,38 +1,167 @@
-from tensorflow import logging
+import inspect
+import os
 from tensorflow import gfile
-from keras.applications.vgg19 import VGG19
-from keras.preprocessing import image
-from keras.applications.vgg19 import preprocess_input
-from keras.models import Model
 import numpy as np
+import tensorflow as tf
+import time
 
-base_model = VGG19(weights='imagenet')
-model = Model(inputs=base_model.input, outputs=base_model.get_layer('fc2').output)
+VGG_MEAN = [103.939, 116.779, 123.68]
 
-batch_size=10
-reach_last_file=False
-idx = np.array([0,batch_size])
+class Vgg16:
+    def __init__(self, vgg16_npy_path=None):
+        if vgg16_npy_path is None:
+
+            path = os.path.abspath(os.path.join("gs://ksh_imagenet/vgg16", os.pardir))
+            path = os.path.join(path, "vgg16.npy")
+            vgg16_npy_path = path
+            print(path)
+
+        self.data_dict = np.load(vgg16_npy_path, encoding='latin1').item()
+        print("npy file loaded")
+
+    def build(self, rgb):
+        """
+        load variable from npy to build the VGG
+        :param rgb: rgb image [batch, height, width, 3] values scaled [0, 1]
+        """
+
+        start_time = time.time()
+        print("build model started")
+        rgb_scaled = rgb * 255.0
+
+        # Convert RGB to BGR
+        red, green, blue = tf.split(axis=3, num_or_size_splits=3, value=rgb_scaled)
+        assert red.get_shape().as_list()[1:] == [224, 224, 1]
+        assert green.get_shape().as_list()[1:] == [224, 224, 1]
+        assert blue.get_shape().as_list()[1:] == [224, 224, 1]
+        bgr = tf.concat(axis=3, values=[
+            blue - VGG_MEAN[0],
+            green - VGG_MEAN[1],
+            red - VGG_MEAN[2],
+        ])
+        assert bgr.get_shape().as_list()[1:] == [224, 224, 3]
+
+        self.conv1_1 = self.conv_layer(bgr, "conv1_1")
+        self.conv1_2 = self.conv_layer(self.conv1_1, "conv1_2")
+        self.pool1 = self.max_pool(self.conv1_2, 'pool1')
+
+        self.conv2_1 = self.conv_layer(self.pool1, "conv2_1")
+        self.conv2_2 = self.conv_layer(self.conv2_1, "conv2_2")
+        self.pool2 = self.max_pool(self.conv2_2, 'pool2')
+
+        self.conv3_1 = self.conv_layer(self.pool2, "conv3_1")
+        self.conv3_2 = self.conv_layer(self.conv3_1, "conv3_2")
+        self.conv3_3 = self.conv_layer(self.conv3_2, "conv3_3")
+        self.pool3 = self.max_pool(self.conv3_3, 'pool3')
+
+        self.conv4_1 = self.conv_layer(self.pool3, "conv4_1")
+        self.conv4_2 = self.conv_layer(self.conv4_1, "conv4_2")
+        self.conv4_3 = self.conv_layer(self.conv4_2, "conv4_3")
+        self.pool4 = self.max_pool(self.conv4_3, 'pool4')
+
+        self.conv5_1 = self.conv_layer(self.pool4, "conv5_1")
+        self.conv5_2 = self.conv_layer(self.conv5_1, "conv5_2")
+        self.conv5_3 = self.conv_layer(self.conv5_2, "conv5_3")
+        self.pool5 = self.max_pool(self.conv5_3, 'pool5')
+
+        self.fc6 = self.fc_layer(self.pool5, "fc6")
+        assert self.fc6.get_shape().as_list()[1:] == [4096]
+        self.relu6 = tf.nn.relu(self.fc6)
+
+        self.fc7 = self.fc_layer(self.relu6, "fc7")
+        self.relu7 = tf.nn.relu(self.fc7)
+
+        self.fc8 = self.fc_layer(self.relu7, "fc8")
+
+        self.prob = tf.nn.softmax(self.fc8, name="prob")
+
+        self.data_dict = None
+        print(("build model finished: %ds" % (time.time() - start_time)))
+
+    def avg_pool(self, bottom, name):
+        return tf.nn.avg_pool(bottom, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME', name=name)
+
+    def max_pool(self, bottom, name):
+        return tf.nn.max_pool(bottom, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME', name=name)
+
+    def conv_layer(self, bottom, name):
+        with tf.variable_scope(name):
+            filt = self.get_conv_filter(name)
+
+            conv = tf.nn.conv2d(bottom, filt, [1, 1, 1, 1], padding='SAME')
+
+            conv_biases = self.get_bias(name)
+            bias = tf.nn.bias_add(conv, conv_biases)
+
+            relu = tf.nn.relu(bias)
+            return relu
+
+    def fc_layer(self, bottom, name):
+        with tf.variable_scope(name):
+            shape = bottom.get_shape().as_list()
+            dim = 1
+            for d in shape[1:]:
+                dim *= d
+            x = tf.reshape(bottom, [-1, dim])
+
+            weights = self.get_fc_weight(name)
+            biases = self.get_bias(name)
+
+            # Fully connected layer. Note that the '+' operation automatically
+            # broadcasts the biases.
+            fc = tf.nn.bias_add(tf.matmul(x, weights), biases)
+
+            return fc
+
+    def get_conv_filter(self, name):
+        return tf.constant(self.data_dict[name][0], name="filter")
+
+    def get_bias(self, name):
+        return tf.constant(self.data_dict[name][1], name="biases")
+
+    def get_fc_weight(self, name):
+        return tf.constant(self.data_dict[name][0], name="weights")
 
 files = gfile.Glob("gs://ksh_imagenet/ILSVRC/Data/DET/test/*.jpeg")
-out_file = gfile.Open("gs://ksh_imagenet/feature.jpeg", "w+")
-
+out_file = gfile.Open("gs://ksh_imagenet/vgg16/feature.csv", "w+")
 out_file.write("filename,"+",".join(["feature"+str(i) for i in range(1,4097)])+"\n")
-while not reach_last_file:
-    if idx[1] == len(files):
-        reach_last_file = True
+filename_queue = tf.train.string_input_producer(files) #  list of files to read
 
-    files0=files[idx[0]:idx[1]]
-    imgs = [image.load_img(files0[i], target_size=(224, 224)) for i in range(len(files0))]
-    x = [image.img_to_array(img) for img in imgs]
-    x = np.expand_dims(x, axis=0)
-    x = np.squeeze(x,0)
-    x = preprocess_input(x)
+reader = tf.WholeFileReader()
+key, value = reader.read(filename_queue)
 
-    block4_pool_features = model.predict(x)
-    for i in range(len(files0)):
-        out_file.write(files0[i]+","+ ",".join(["%f" % i for i in block4_pool_features[i]]) + "\n")
-    logging.info("%i processed", idx[1])
-    
-    idx += batch_size
-    idx[1] = min([idx[1],len(files)])
+my_img = tf.image.decode_jpeg(value) # use png or jpg decoder based on your files.
+my_img = tf.image.resize_images(my_img,[224,224]) # use png or jpg decoder based on your files.
+
+init_op = tf.global_variables_initializer()
+with tf.Session() as sess:
+  sess.run(init_op)
+
+  # Start populating the filename queue.
+
+  coord = tf.train.Coordinator()
+  threads = tf.train.start_queue_runners(coord=coord)
+  image0 = []
+  for i in range(len(files)): #length of your filename list
+    image0.append(my_img.eval()) #here is your image Tensor :)
+
+  image0 = np.expand_dims(image0, axis=0)
+  image0 = np.squeeze(image0, 0)/255
+
+
+  coord.request_stop()
+  coord.join(threads)
+
+sess= tf.Session()
+model= Vgg16()
+model.build(image0)
+feature=sess.run(model.fc7)
+for i in range(len(files)):
+    out_file.write(files[i] + "," + ",".join(["%f" % y for y in feature[i]]) + "\n")
 out_file.close()
+
+
+
+
+
+
