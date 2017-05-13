@@ -6,8 +6,8 @@ import tensorflow as tf
 import time
 from tensorflow import logging
 
-
-sess = tf.Session()
+config = tf.ConfigProto(allow_soft_placement = True)
+sess = tf.Session(config = config)
 with tf.device("/gpu:0"):
     f=tf.gfile.FastGFile("gs://ksh_imagenet/vgg16/classify_image_graph_def.pb", 'rb')
     graph_def = tf.GraphDef()
