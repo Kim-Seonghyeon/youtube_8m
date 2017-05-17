@@ -128,6 +128,8 @@ class YT8MAggregatedFeatureReader(BaseReader):
 
     return features["video_id"], concatenated_features, labels, tf.ones([tf.shape(serialized_examples)[0]])
 
+
+
 class YT8MFrameFeatureReader(BaseReader):
   """Reads TFRecords of SequenceExamples.
 
@@ -258,6 +260,25 @@ class YT8MFrameFeatureReader(BaseReader):
 
     # concatenate different features
     video_matrix = tf.concat(feature_matrices, 1)
+
+    numvec = tf.reduce_sum(video_matrix[1:num_frames] * video_matrix[0:num_frames - 1], 1) / (
+        tf.sqrt(tf.reduce_sum(video_matrix[1:num_frames] ** 2, 1)) * tf.sqrt(
+            tf.reduce_sum(video_matrix[0:num_frames - 1] ** 2, 1)))
+    scene = (numvec < 0.25)
+    sess = tf.Session()
+    num_frames0 = tf.constant([num_frames], tf.int32, shape=(1, 1))
+    idx = tf.where(scene)
+    idx = tf.cast(idx, tf.int32)
+    idx = tf.concat([idx, num_frames0], 0)
+    group = tf.concat([idx[0:1], idx[1:] - idx[:-1]], axis=0)
+
+    sess.run(tf.reduce_sum(tf.squeeze(group)))
+    num = sess.run(tf.shape(group)[0])
+    scene_splits = tf.split(video_matrix[:num_frames], tf.squeeze(group), 0, num)
+    scene_split_mean = [tf.reduce_mean(scene_split, 0) for scene_split in scene_splits]
+    scene_split_mean = tf.stack(scene_split_mean)
+    video_matrix = resize_axis(scene_split_mean, 0, 300)
+
 
     # convert to batch format.
     # TODO: Do proper batch reads to remove the IO bottleneck.
