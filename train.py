@@ -36,15 +36,15 @@ FLAGS = flags.FLAGS
 
 if __name__ == "__main__":
   # Dataset flags.
-  flags.DEFINE_string("train_dir", '/home/ksh/IDEA/seminar/youtube/youtube_8m',
+  flags.DEFINE_string("train_dir", "/tmp/yt8m_model/",
                       "The directory to save the model files in.")
   flags.DEFINE_string(
-      "train_data_pattern", 'gs://youtube8m-ml-us-east1/1/video_level/train/train*.tfrecord',
+      "train_data_pattern", "",
       "File glob for the training dataset. If the files refer to Frame Level "
       "features (i.e. tensorflow.SequenceExample), then set --reader_type "
       "format. The (Sequence)Examples are expected to have 'rgb' byte array "
       "sequence feature as well as a 'labels' int64 context feature.")
-  flags.DEFINE_string("feature_names", "rgb", "Name of the feature "
+  flags.DEFINE_string("feature_names", "mean_rgb", "Name of the feature "
                       "to use for training.")
   flags.DEFINE_string("feature_sizes", "1024", "Length of the feature vectors.")
 
@@ -56,7 +56,7 @@ if __name__ == "__main__":
       "features. The model must also be set appropriately (i.e. to read 3D "
       "batches VS 4D batches.")
   flags.DEFINE_string(
-      "model", "DbofModel",
+      "model", "LogisticModel",
       "Which architecture to use for the model. Models are defined "
       "in models.py.")
   flags.DEFINE_bool(
@@ -81,7 +81,7 @@ if __name__ == "__main__":
   flags.DEFINE_float("learning_rate_decay_examples", 4000000,
                      "Multiply current learning rate by learning_rate_decay "
                      "every learning_rate_decay_examples.")
-  flags.DEFINE_integer("num_epochs", 3,
+  flags.DEFINE_integer("num_epochs", 5,
                        "How many passes to make over the dataset before "
                        "halting training.")
   flags.DEFINE_integer("max_steps", None,
@@ -388,6 +388,7 @@ class Trainer(object):
         if not meta_filename:
           saver = self.build_model(self.model, self.reader)
 
+        input_batch_raw = tf.get_collection("input_batch_raw")[0]
         global_step = tf.get_collection("global_step")[0]
         loss = tf.get_collection("loss")[0]
         predictions = tf.get_collection("predictions")[0]
@@ -411,6 +412,9 @@ class Trainer(object):
         logging.info("%s: Entering training loop.", task_as_string(self.task))
         while (not sv.should_stop()) and (not self.max_steps_reached):
           batch_start_time = time.time()
+          input_batch_raw_val = sess.run(input_batch_raw)
+          logging.info(input_batch_raw[0])
+
           _, global_step_val, loss_val, predictions_val, labels_val = sess.run(
               [train_op, global_step, loss, predictions, labels])
           seconds_per_batch = time.time() - batch_start_time
@@ -431,7 +435,7 @@ class Trainer(object):
             logging.info("training step " + str(global_step_val) + " | Loss: " + ("%.2f" % loss_val) +
               " Examples/sec: " + ("%.2f" % examples_per_second) + " | Hit@1: " +
               ("%.2f" % hit_at_one) + " PERR: " + ("%.2f" % perr) +
-              " GAP: " + ("%.2f" % gap) + ("num batch: %.2f " % labels_val.shape[0]) + ("time: %.2f " % seconds_per_batch))
+              " GAP: " + ("%.2f" % gap))
 
             sv.summary_writer.add_summary(
                 utils.MakeSummary("model/Training_Hit@1", hit_at_one),
@@ -455,8 +459,7 @@ class Trainer(object):
               self.last_model_export_step = global_step_val
           else:
             logging.info("training step " + str(global_step_val) + " | Loss: " +
-              ("%.2f" % loss_val) + " Examples/sec: " + ("%.2f" % examples_per_second) + 
-                         ("num batch: %.2f " % labels_val.shape[0]) + ("time: %.2f " % seconds_per_batch))
+              ("%.2f" % loss_val) + " Examples/sec: " + ("%.2f" % examples_per_second))
       except tf.errors.OutOfRangeError:
         logging.info("%s: Done training -- epoch limit reached.",
                      task_as_string(self.task))
