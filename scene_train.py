@@ -36,10 +36,10 @@ import utils
 FLAGS = flags.FLAGS
 if __name__ == "__main__":
   # Dataset flags.
-  flags.DEFINE_string("train_dir", "/home/ksh/youtube8m/model/logistic",
+  flags.DEFINE_string("train_dir", "/home/shkim930923/scene_lstm/",
                       "The directory to save the model files in.")
   flags.DEFINE_string(
-      "train_data_pattern", "/home/ksh/youtube8m/frame_data/validate*",
+      "train_data_pattern", "gs://youtube8m-ml-us-east1/1/frame_level/train/train*.tfrecord",
       "File glob for the training dataset. If the files refer to Frame Level "
       "features (i.e. tensorflow.SequenceExample), then set --reader_type "
       "format. The (Sequence)Examples are expected to have 'rgb' byte array "
@@ -65,7 +65,7 @@ if __name__ == "__main__":
       " new model instance.")
 
   # Training flags.
-  flags.DEFINE_integer("batch_size", 128,
+  flags.DEFINE_integer("batch_size", 2,
                        "How many examples to process per batch for training.")
   flags.DEFINE_string("label_loss", "CrossEntropyLoss",
                       "Which loss function to use for training the model.")
