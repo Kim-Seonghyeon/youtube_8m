@@ -388,7 +388,6 @@ class Trainer(object):
         if not meta_filename:
           saver = self.build_model(self.model, self.reader)
 
-        input_batch_raw = tf.get_collection("input_batch_raw")[0]
         global_step = tf.get_collection("global_step")[0]
         loss = tf.get_collection("loss")[0]
         predictions = tf.get_collection("predictions")[0]
@@ -412,9 +411,6 @@ class Trainer(object):
         logging.info("%s: Entering training loop.", task_as_string(self.task))
         while (not sv.should_stop()) and (not self.max_steps_reached):
           batch_start_time = time.time()
-          input_batch_raw_val = sess.run(input_batch_raw)
-          logging.info(input_batch_raw[0])
-
           _, global_step_val, loss_val, predictions_val, labels_val = sess.run(
               [train_op, global_step, loss, predictions, labels])
           seconds_per_batch = time.time() - batch_start_time
