@@ -132,6 +132,7 @@ class DbofModel(models.BaseModel):
     max_frames = model_input.get_shape().as_list()[1]
     feature_size = model_input.get_shape().as_list()[2]
     reshaped_input = tf.reshape(model_input, [-1, feature_size])
+    tf.summary.histogram("input_hist", reshaped_input)
 
     if add_batch_norm:
       reshaped_input = slim.batch_norm(
@@ -144,6 +145,7 @@ class DbofModel(models.BaseModel):
     cluster_weights = tf.get_variable("cluster_weights",
       [feature_size, cluster_size],
       initializer = tf.random_normal_initializer(stddev=1 / math.sqrt(feature_size)))
+    tf.summary.histogram("cluster_weights", cluster_weights)
     activation = tf.matmul(reshaped_input, cluster_weights)
     if add_batch_norm:
       activation = slim.batch_norm(
@@ -156,8 +158,10 @@ class DbofModel(models.BaseModel):
       cluster_biases = tf.get_variable("cluster_biases",
         [cluster_size],
         initializer = tf.random_normal(stddev=1 / math.sqrt(feature_size)))
+      tf.summary.histogram("cluster_biases", cluster_biases)
       activation += cluster_biases
     activation = tf.nn.relu6(activation)
+    tf.summary.histogram("cluster_output", activation)
 
     activation = tf.reshape(activation, [-1, max_frames, cluster_size])
     activation = utils.FramePooling(activation, FLAGS.dbof_pooling_method)
@@ -165,6 +169,7 @@ class DbofModel(models.BaseModel):
     hidden1_weights = tf.get_variable("hidden1_weights",
       [cluster_size, hidden1_size],
       initializer=tf.random_normal_initializer(stddev=1 / math.sqrt(cluster_size)))
+    tf.summary.histogram("hidden1_weights", hidden1_weights)
     activation = tf.matmul(activation, hidden1_weights)
     if add_batch_norm:
       activation = slim.batch_norm(
@@ -177,8 +182,10 @@ class DbofModel(models.BaseModel):
       hidden1_biases = tf.get_variable("hidden1_biases",
         [hidden1_size],
         initializer = tf.random_normal_initializer(stddev=0.01))
+      tf.summary.histogram("hidden1_biases", hidden1_biases)
       activation += hidden1_biases
     activation = tf.nn.relu6(activation)
+    tf.summary.histogram("hidden1_output", activation)
 
     aggregated_model = getattr(video_level_models,
                                FLAGS.video_level_classifier_model)
