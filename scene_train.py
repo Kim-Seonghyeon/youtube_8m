@@ -35,11 +35,10 @@ import utils
 
 FLAGS = flags.FLAGS
 if __name__ == "__main__":
-  # Dataset flags.
-  flags.DEFINE_string("train_dir", "/home/shkim930923/scene_lstm/",
+  flags.DEFINE_string("train_dir", "/home/ksh/youtube_8m/models/",
                       "The directory to save the model files in.")
   flags.DEFINE_string(
-      "train_data_pattern", "gs://youtube8m-ml-us-east1/1/frame_level/train/train*.tfrecord",
+      "train_data_pattern", "/home/ksh/data/yt8m_frame/train*",
       "File glob for the training dataset. If the files refer to Frame Level "
       "features (i.e. tensorflow.SequenceExample), then set --reader_type "
       "format. The (Sequence)Examples are expected to have 'rgb' byte array "
@@ -47,6 +46,7 @@ if __name__ == "__main__":
   flags.DEFINE_string("feature_names", "rgb", "Name of the feature "
                       "to use for training.")
   flags.DEFINE_string("feature_sizes", "1024", "Length of the feature vectors.")
+  flags.DEFINE_string("max_scene", 30, "Length of the scenes.")
 
   # Model flags.
   flags.DEFINE_bool(
@@ -60,12 +60,12 @@ if __name__ == "__main__":
       "Which architecture to use for the model. Models are defined "
       "in models.py.")
   flags.DEFINE_bool(
-      "start_new_model", False,
+      "start_new_model", True,
       "If set, this will not resume from a checkpoint and will instead create a"
       " new model instance.")
 
   # Training flags.
-  flags.DEFINE_integer("batch_size", 2,
+  flags.DEFINE_integer("batch_size", 32,
                        "How many examples to process per batch for training.")
   flags.DEFINE_string("label_loss", "CrossEntropyLoss",
                       "Which loss function to use for training the model.")
@@ -73,12 +73,12 @@ if __name__ == "__main__":
       "regularization_penalty", 1.0,
       "How much weight to give to the regularization loss (the label loss has "
       "a weight of 1).")
-  flags.DEFINE_float("base_learning_rate", 0.0002,
+  flags.DEFINE_float("base_learning_rate", 0.001,
                      "Which learning rate to start with.")
-  flags.DEFINE_float("learning_rate_decay", 0.95,
+  flags.DEFINE_float("learning_rate_decay", 0.8,
                      "Learning rate decay factor to be applied every "
                      "learning_rate_decay_examples.")
-  flags.DEFINE_float("learning_rate_decay_examples", 4000000,
+  flags.DEFINE_float("learning_rate_decay_examples", 100,
                      "Multiply current learning rate by learning_rate_decay "
                      "every learning_rate_decay_examples.")
   flags.DEFINE_integer("num_epochs", 5,
@@ -100,6 +100,7 @@ if __name__ == "__main__":
       "log_device_placement", False,
       "Whether to write the device on which every op will run into the "
       "logs on startup.")
+
 
 def validate_class_name(flag_value, category, modules, expected_superclass):
   """Checks that the given string matches a class of the expected type.
@@ -250,8 +251,11 @@ def build_graph(reader,
   tf.summary.histogram("model/input_raw", model_input_raw)
 
   feature_dim = len(model_input_raw.get_shape()) - 1
-  model_input_raw_ph =tf.placeholder(tf.float32,model_input_raw.get_shape())
-  num_frames_ph =tf.placeholder(tf.float32,[model_input_raw.get_shape()[0]])
+  model_input_raw_shape = list(model_input_raw.get_shape())
+  model_input_raw_shape[1] = FLAGS.max_scene
+
+  model_input_raw_ph =tf.placeholder(tf.float32,model_input_raw_shape)
+  num_frames_ph =tf.placeholder(tf.float32,[model_input_raw_shape[0]])
   model_input = tf.nn.l2_normalize(model_input_raw_ph, feature_dim)
 
   tower_inputs = tf.split(model_input, num_towers)
@@ -333,6 +337,7 @@ def build_graph(reader,
   tf.add_to_collection("num_frames", num_frames)
   tf.add_to_collection("labels", tf.cast(labels_batch, tf.float32))
   tf.add_to_collection("train_op", train_op)
+  tf.add_to_collection("learning_rate", learning_rate)
 
 
 class Trainer(object):
@@ -399,6 +404,7 @@ class Trainer(object):
         train_op = tf.get_collection("train_op")[0]
         num_frames = tf.get_collection("num_frames")[0]
         num_frames_ph = tf.get_collection("num_frames_ph")[0]
+        learning_rate = tf.get_collection("learning_rate")[0]
 
         init_op = tf.global_variables_initializer()
 
@@ -411,7 +417,7 @@ class Trainer(object):
         save_model_secs=15 * 60,
         save_summaries_secs=120,
         saver=saver)
-
+        
     logging.info("%s: Starting managed session.", task_as_string(self.task))
     with sv.managed_session(target, config=self.config) as sess:
       try:
@@ -419,7 +425,7 @@ class Trainer(object):
         while (not sv.should_stop()) and (not self.max_steps_reached):
           batch_start_time = time.time()
 
-          model_input_raw_val,num_frames_val = sess.run([input_batch_raw,num_frames])
+          model_input_raw_val,num_frames_val,learning_rate_val = sess.run([input_batch_raw,num_frames,learning_rate])
 
           pr_feature=[]
           pr_num=[]
@@ -427,17 +433,20 @@ class Trainer(object):
           for i in range(model_input_raw_val.shape[0]):
             numvec = (model_input_raw_val[i][1:num_frames_val[i]] *model_input_raw_val[i][0:num_frames_val[i]-1]).sum(axis=1)/(np.sqrt((model_input_raw_val[i][1:num_frames_val[i]]**2).sum(1))*(np.sqrt((model_input_raw_val[i][0:num_frames_val[i]-1]**2).sum(1))))
             scene = (numvec<0.25)
-            idx = np.where(scene)[0]+1
+            if np.sum(scene) > FLAGS.max_scene:
+              idx = np.sort(numvec.argpartition(FLAGS.max_scene)[:FLAGS.max_scene]+1)
+            else:
+              idx = np.where(scene)[0]+1
             example_splits = np.split(model_input_raw_val[i][:num_frames_val[i]], idx,0)
-    
+   
             example_splits_mean = [np.mean(example_split,0) for example_split in example_splits ]
             example_splits_mean = np.stack(example_splits_mean, 0)
 
             sh = list(example_splits_mean.shape)
-            pr_num.append(sh[0])
-            sh[0] = 300 - sh[0]
-            example_splits_mean = np.concatenate([example_splits_mean, np.zeros(sh)], 0)
-
+            sh2 = np.min(np.array([FLAGS.max_scene,sh[0]]))
+            pr_num.append(sh2)
+            sh[0] = FLAGS.max_scene - sh2
+            example_splits_mean = np.concatenate([example_splits_mean[:sh2], np.zeros(sh)], 0)
             pr_feature.append(example_splits_mean)
           pr_feature=np.stack(pr_feature, 0)
           pr_num=np.stack(pr_num, 0)
@@ -700,3 +709,5 @@ def main(unused_argv):
 
 if __name__ == "__main__":
   app.run() 
+
+ 
