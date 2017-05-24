@@ -39,14 +39,14 @@ if __name__ == "__main__":
   flags.DEFINE_string("train_dir", "/tmp/yt8m_model/",
                       "The directory to save the model files in.")
   flags.DEFINE_string(
-      "train_data_pattern", "",
+      "train_data_pattern", "gs://youtube8m-ml-us-east1/1/frame_level/train/train*.tfrecord",
       "File glob for the training dataset. If the files refer to Frame Level "
       "features (i.e. tensorflow.SequenceExample), then set --reader_type "
       "format. The (Sequence)Examples are expected to have 'rgb' byte array "
       "sequence feature as well as a 'labels' int64 context feature.")
-  flags.DEFINE_string("feature_names", "mean_rgb", "Name of the feature "
+  flags.DEFINE_string("feature_names", "rgb, audio", "Name of the feature "
                       "to use for training.")
-  flags.DEFINE_string("feature_sizes", "1024", "Length of the feature vectors.")
+  flags.DEFINE_string("feature_sizes", "1024, 128", "Length of the feature vectors.")
 
   # Model flags.
   flags.DEFINE_bool(
@@ -65,7 +65,7 @@ if __name__ == "__main__":
       " new model instance.")
 
   # Training flags.
-  flags.DEFINE_integer("batch_size", 1024,
+  flags.DEFINE_integer("batch_size", 256,
                        "How many examples to process per batch for training.")
   flags.DEFINE_string("label_loss", "CrossEntropyLoss",
                       "Which loss function to use for training the model.")
