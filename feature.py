@@ -30,12 +30,12 @@ nb_classes = 4716
 
 
 if __name__ == '__main__':
-  flags.DEFINE_string("train_dir", "/home/ksh/youtube8m/model/logistic",
+  flags.DEFINE_string("train_dir", "gs://ksh_dbof_moe8_audio_ver2/train/",
                       "The directory to load the model files from.")
-  flags.DEFINE_string("output_file", "/home/ksh/youtube8m/frame_data/",
+  flags.DEFINE_string("output_file", "gs://ksh_dbof_moe8_audio_ver2/train/dbof_feature",
                       "The file to save the predictions to.")
   flags.DEFINE_string(
-      "input_data_pattern", "/home/ksh/youtube8m/frame_data/validate1*",
+      "input_data_pattern", "gs://youtube8m-ml-us-east1/1/frame_level/validate/validate*.tfrecord",
       "File glob defining the evaluation dataset in tensorflow.SequenceExample "
       "format. The SequenceExamples are expected to have an 'rgb' byte array "
       "sequence feature as well as a 'labels' int64 context feature.")
