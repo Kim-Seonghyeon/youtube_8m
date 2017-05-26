@@ -151,7 +151,7 @@ def inference(reader, train_dir, data_pattern, out_file_location, batch_size, to
         logging.info(file_num)
         feature_val_tot = np.concatenate(feature_val_tot, axis=0)
         logging.info(feature_val_tot.shape)
-        np.savez('/home/ksh/youtube8m/feature_data/train' + str(file_num), id=video_id_batch_val, feature=feature_val_tot, label=labels_val)
+        np.savez(out_file_location + str(file_num), id=video_id_batch_val, feature=feature_val_tot, label=labels_val)
         logging.info(file_num)
         file_num+=1
 
@@ -162,7 +162,7 @@ def inference(reader, train_dir, data_pattern, out_file_location, batch_size, to
         logging.info(file_num)
         feature_val_tot = np.concatenate(feature_val_tot, axis=0)
         logging.info(feature_val_tot.shape)
-        np.savez('/home/ksh/youtube8m/feature_data/train' + str(file_num), id=video_id_batch_val, feature=feature_val_tot, label=labels_val)
+        np.savez(out_file_location + str(file_num), id=video_id_batch_val, feature=feature_val_tot, label=labels_val)
     finally:
         coord.request_stop()
 
