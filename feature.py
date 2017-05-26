@@ -35,7 +35,7 @@ if __name__ == '__main__':
   flags.DEFINE_string("output_file", "gs://ksh_dbof_moe8_audio_ver2/train/dbof_feature",
                       "The file to save the predictions to.")
   flags.DEFINE_string(
-      "input_data_pattern", "gs://youtube8m-ml-us-east1/1/frame_level/validate/validate*.tfrecord",
+      "input_data_pattern", "gs://youtube8m-ml-us-east1/1/frame_level/validate/validate*[1-4].tfrecord",
       "File glob defining the evaluation dataset in tensorflow.SequenceExample "
       "format. The SequenceExamples are expected to have an 'rgb' byte array "
       "sequence feature as well as a 'labels' int64 context feature.")
@@ -151,7 +151,8 @@ def inference(reader, train_dir, data_pattern, out_file_location, batch_size, to
         logging.info(file_num)
         feature_val_tot = np.concatenate(feature_val_tot, axis=0)
         logging.info(feature_val_tot.shape)
-        np.savez(out_file_location + str(file_num), id=video_id_batch_val, feature=feature_val_tot, label=labels_val)
+        os.path.expanduser(out_file_location + str(file_num)+'.npz')
+        np.savez(out_file_location + str(file_num), feature=feature_val_tot, label=labels_val)
         logging.info(file_num)
         file_num+=1
 
@@ -162,6 +163,7 @@ def inference(reader, train_dir, data_pattern, out_file_location, batch_size, to
         logging.info(file_num)
         feature_val_tot = np.concatenate(feature_val_tot, axis=0)
         logging.info(feature_val_tot.shape)
+        os.path.expanduser(out_file_location + str(file_num)+'.npz')
         np.savez(out_file_location + str(file_num), id=video_id_batch_val, feature=feature_val_tot, label=labels_val)
     finally:
         coord.request_stop()
