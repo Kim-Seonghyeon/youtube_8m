@@ -135,6 +135,9 @@ def inference(reader, train_dir, data_pattern, out_file_location, batch_size, to
     num_examples_processed = 0
     file_num = 0
     start_time = time.time()
+    with gfile.Open(out_file_location + str(file_num)+'.npz', "w+") as out_file:
+      out_file.write("VideoId,LabelConfidencePairs\n")
+
 
     try:
       while not coord.should_stop():
