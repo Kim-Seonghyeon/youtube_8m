@@ -46,7 +46,7 @@ flags.DEFINE_string("video_level_classifier_model", "MoeModel",
                     "classifier layer")
 flags.DEFINE_integer("lstm_cells", 1024, "Number of LSTM cells.")
 flags.DEFINE_integer("lstm_layers", 2, "Number of LSTM layers.")
-flags.DEFINE_integer("relu", True, "relu")
+flags.DEFINE_integer("relu", False, "relu")
 
 class FrameLevelLogisticModel(models.BaseModel):
 
