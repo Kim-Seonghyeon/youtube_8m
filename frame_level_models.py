@@ -30,7 +30,7 @@ flags.DEFINE_integer("iterations", 30,
 flags.DEFINE_bool("dbof_add_batch_norm", True,
                   "Adds batch normalization to the DBoF model.")
 flags.DEFINE_bool(
-    "sample_random_frames", True,
+    "sample_random_frames", False,
     "If true samples random frames (for frame level models). If false, a random"
     "sequence of frames is sampled instead.")
 flags.DEFINE_integer("dbof_cluster_size", 8192,
