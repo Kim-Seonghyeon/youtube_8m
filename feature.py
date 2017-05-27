@@ -135,8 +135,6 @@ def inference(reader, train_dir, data_pattern, out_file_location, batch_size, to
     num_examples_processed = 0
     file_num = 0
     start_time = time.time()
-    with gfile.Open(out_file_location + str(file_num)+'.npz', "w+") as out_file:
-      out_file.write("VideoId,LabelConfidencePairs\n")
 
 
     try:
@@ -154,8 +152,12 @@ def inference(reader, train_dir, data_pattern, out_file_location, batch_size, to
         logging.info(file_num)
         feature_val_tot = np.concatenate(feature_val_tot, axis=0)
         logging.info(feature_val_tot.shape)
-        os.path.expanduser(out_file_location + str(file_num)+'.npz')
-        np.savez(out_file_location + str(file_num), feature=feature_val_tot, label=labels_val)
+        with gfile.Open(out_file_location + 'id/' + 'dobf' + '_id' + str(file_num)+'.npy', "w+") as out_file:
+          np.save(out_file, video_id_batch_val)
+        with gfile.Open(out_file_location + 'feature/' + 'dobf' + '_feature' + str(file_num)+'.npy', "w+") as out_file:
+          np.save(out_file, feature_val_tot)
+        with gfile.Open(out_file_location + 'label/' + 'dobf' + '_label' + str(file_num)+'.npy', "w+") as out_file:
+          np.save(out_file, labels_val)
         logging.info(file_num)
         file_num+=1
 
@@ -166,8 +168,12 @@ def inference(reader, train_dir, data_pattern, out_file_location, batch_size, to
         logging.info(file_num)
         feature_val_tot = np.concatenate(feature_val_tot, axis=0)
         logging.info(feature_val_tot.shape)
-        os.path.expanduser(out_file_location + str(file_num)+'.npz')
-        np.savez(out_file_location + str(file_num), id=video_id_batch_val, feature=feature_val_tot, label=labels_val)
+        with gfile.Open(out_file_location + 'id/' + 'dobf' + '_id' + str(file_num)+'.npy', "w+") as out_file:
+          np.save(out_file, video_id_batch_val)
+        with gfile.Open(out_file_location + 'feature/' + 'dobf' + '_feature' + str(file_num)+'.npy', "w+") as out_file:
+          np.save(out_file, feature_val_tot)
+        with gfile.Open(out_file_location + 'label/' + 'dobf' + '_label' + str(file_num)+'.npy', "w+") as out_file:
+          np.save(out_file, labels_val)
     finally:
         coord.request_stop()
 
