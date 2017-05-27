@@ -147,7 +147,7 @@ def inference(reader, train_dir, data_pattern, out_file_location, batch_size, to
     try:
       while not coord.should_stop():
         feature_val_tot = []
-        for i in range(5):
+        for i in range(128):
           video_id_batch_val, video_batch_val,num_frames_batch_val, labels_val = sess.run([video_id_batch, video_batch, num_frames_batch, labels])
           feature1_val,feature2_val,feature3_val,feature4_val,feature5_val,feature6_val,feature7_val,feature8_val, = sess.run([feature1,feature2,feature3,feature4,feature5,feature6,feature7,feature8], feed_dict={input_tensor: video_batch_val, num_frames_tensor: num_frames_batch_val})
           feature_val_tot.append(feature1_val)
