@@ -111,7 +111,7 @@ def inference(reader, train_dir, data_pattern, out_file_location, batch_size, to
     saver.restore(sess, latest_checkpoint)
 
     graph = tf.get_default_graph()
-    feature = graph.get_tensor_by_name("tower/hidden1_bn/batchnorm/add_1:0")
+    feature = graph.get_tensor_by_name("tower/hidden1_bn/batchnorm/add_1:1")
     labels = tf.get_collection("labels")[0]
     input_tensor = tf.get_collection("input_batch_raw")[0]
     num_frames_tensor = tf.get_collection("num_frames")[0]
