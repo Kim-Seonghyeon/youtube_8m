@@ -46,6 +46,7 @@ flags.DEFINE_string("video_level_classifier_model", "MoeModel",
                     "classifier layer")
 flags.DEFINE_integer("lstm_cells", 1024, "Number of LSTM cells.")
 flags.DEFINE_integer("lstm_layers", 2, "Number of LSTM layers.")
+flags.DEFINE_integer("relu", True, "relu")
 
 class FrameLevelLogisticModel(models.BaseModel):
 
@@ -157,7 +158,8 @@ class DbofModel(models.BaseModel):
         [cluster_size],
         initializer = tf.random_normal(stddev=1 / math.sqrt(feature_size)))
       activation += cluster_biases
-    activation = tf.nn.relu6(activation)
+    if FLAGS.relu:
+      activation = tf.nn.relu6(activation)
 
     activation = tf.reshape(activation, [-1, max_frames, cluster_size])
     activation = utils.FramePooling(activation, FLAGS.dbof_pooling_method)
