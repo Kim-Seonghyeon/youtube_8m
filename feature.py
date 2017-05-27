@@ -111,7 +111,14 @@ def inference(reader, train_dir, data_pattern, out_file_location, batch_size, to
     saver.restore(sess, latest_checkpoint)
 
     graph = tf.get_default_graph()
-    feature = graph.get_tensor_by_name("tower_1/hidden1_bn/batchnorm/add_1:0")
+    feature1 = graph.get_tensor_by_name("tower/hidden1_bn/batchnorm/add_1:0")
+    feature2 = graph.get_tensor_by_name("tower_1/hidden1_bn/batchnorm/add_1:0")
+    feature3 = graph.get_tensor_by_name("tower_2/hidden1_bn/batchnorm/add_1:0")
+    feature4 = graph.get_tensor_by_name("tower_3/hidden1_bn/batchnorm/add_1:0")
+    feature5 = graph.get_tensor_by_name("tower_4/hidden1_bn/batchnorm/add_1:0")
+    feature6 = graph.get_tensor_by_name("tower_5/hidden1_bn/batchnorm/add_1:0")
+    feature7 = graph.get_tensor_by_name("tower_6/hidden1_bn/batchnorm/add_1:0")
+    feature8 = graph.get_tensor_by_name("tower_7/hidden1_bn/batchnorm/add_1:0")
     labels = tf.get_collection("labels")[0]
     input_tensor = tf.get_collection("input_batch_raw")[0]
     num_frames_tensor = tf.get_collection("num_frames")[0]
@@ -142,8 +149,15 @@ def inference(reader, train_dir, data_pattern, out_file_location, batch_size, to
         feature_val_tot = []
         for i in range(5):
           video_id_batch_val, video_batch_val,num_frames_batch_val, labels_val = sess.run([video_id_batch, video_batch, num_frames_batch, labels])
-          feature_val, = sess.run([feature], feed_dict={input_tensor: video_batch_val, num_frames_tensor: num_frames_batch_val})
-          feature_val_tot.append(feature_val)
+          feature1_val,feature2_val,feature3_val,feature4_val,feature5_val,feature6_val,feature7_val,feature8_val, = sess.run([feature1,feature2,feature3,feature4,feature5,feature6,feature7,feature8], feed_dict={input_tensor: video_batch_val, num_frames_tensor: num_frames_batch_val})
+          feature_val_tot.append(feature1_val)
+          feature_val_tot.append(feature2_val)
+          feature_val_tot.append(feature3_val)
+          feature_val_tot.append(feature4_val)
+          feature_val_tot.append(feature5_val)
+          feature_val_tot.append(feature6_val)
+          feature_val_tot.append(feature7_val)
+          feature_val_tot.append(feature8_val)
 
           now = time.time()
           num_examples_processed += len(video_batch_val)
