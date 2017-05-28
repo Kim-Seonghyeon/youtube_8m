@@ -90,16 +90,16 @@ def get_input_data_tensors(reader, data_pattern, batch_size, num_readers=1):
     examples_and_labels = [reader.prepare_reader(filename_queue)
                            for _ in range(num_readers)]
 
-    video_id_batch, video_batch, unused_labels, num_frames_batch = (
+    video_id_batch, video_batch, label_batch, num_frames_batch = (
         tf.train.batch_join(examples_and_labels,
                             batch_size=batch_size,
                             allow_smaller_final_batch=True,
                             enqueue_many=True))
-    return video_id_batch, video_batch, num_frames_batch
+    return video_id_batch, video_batch, label_batch, num_frames_batch
 
 def inference(reader, train_dir, data_pattern, out_file_location, batch_size, top_k):
   with tf.Session(config=tf.ConfigProto(allow_soft_placement=True)) as sess:
-    video_id_batch, video_batch, num_frames_batch = get_input_data_tensors(reader, data_pattern, batch_size)
+    video_id_batch, video_batch, label_batch, num_frames_batch = get_input_data_tensors(reader, data_pattern, batch_size)
     latest_checkpoint = tf.train.latest_checkpoint(train_dir)
     if latest_checkpoint is None:
       raise Exception("unable to find a checkpoint at location: %s" % train_dir)
@@ -146,9 +146,11 @@ def inference(reader, train_dir, data_pattern, out_file_location, batch_size, to
 
     try:
       while not coord.should_stop():
+        video_id_batch_val_tot = []
         feature_val_tot = []
+        labels_val_tot = []
         for i in range(128):
-          video_id_batch_val, video_batch_val,num_frames_batch_val, labels_val = sess.run([video_id_batch, video_batch, num_frames_batch, labels])
+          video_id_batch_val, video_batch_val,num_frames_batch_val, labels_val = sess.run([video_id_batch, video_batch, num_frames_batch, label_batch])
           feature1_val,feature2_val,feature3_val,feature4_val,feature5_val,feature6_val,feature7_val,feature8_val, = sess.run([feature1,feature2,feature3,feature4,feature5,feature6,feature7,feature8], feed_dict={input_tensor: video_batch_val, num_frames_tensor: num_frames_batch_val})
           feature_val_tot.append(feature1_val)
           feature_val_tot.append(feature2_val)
@@ -158,6 +160,8 @@ def inference(reader, train_dir, data_pattern, out_file_location, batch_size, to
           feature_val_tot.append(feature6_val)
           feature_val_tot.append(feature7_val)
           feature_val_tot.append(feature8_val)
+          video_id_batch_val_tot.append(video_id_batch_val)
+          labels_val_tot.append(labels_val)
 
           now = time.time()
           num_examples_processed += len(video_batch_val)
@@ -165,13 +169,17 @@ def inference(reader, train_dir, data_pattern, out_file_location, batch_size, to
           logging.info("num examples processed: " + str(num_examples_processed) + " elapsed seconds: " + "{0:.2f}".format(now-start_time))
         logging.info(file_num)
         feature_val_tot = np.concatenate(feature_val_tot, axis=0)
+        video_id_batch_val_tot = np.concatenate(video_id_batch_val_tot, axis=0)
+        labels_val_tot = np.concatenate(labels_val_tot, axis=0)
         logging.info(feature_val_tot.shape)
+        logging.info(video_id_batch_val_tot.shape)
+        logging.info(labels_val_tot.shape)
         with gfile.Open(out_file_location + 'id/' + 'dobf' + '_id' + str(file_num)+'.npy', "w+") as out_file:
-          np.save(out_file, video_id_batch_val)
+          np.save(out_file, video_id_batch_val_tot)
         with gfile.Open(out_file_location + 'feature/' + 'dobf' + '_feature' + str(file_num)+'.npy', "w+") as out_file:
           np.save(out_file, feature_val_tot)
         with gfile.Open(out_file_location + 'label/' + 'dobf' + '_label' + str(file_num)+'.npy', "w+") as out_file:
-          np.save(out_file, labels_val)
+          np.save(out_file, labels_val_tot)
         logging.info(file_num)
         file_num+=1
 
@@ -181,7 +189,11 @@ def inference(reader, train_dir, data_pattern, out_file_location, batch_size, to
         logging.info('Done with inference. The output file was written to ')
         logging.info(file_num)
         feature_val_tot = np.concatenate(feature_val_tot, axis=0)
+        video_id_batch_val_tot = np.concatenate(video_id_batch_val_tot, axis=0)
+        labels_val_tot = np.concatenate(labels_val_tot, axis=0)
         logging.info(feature_val_tot.shape)
+        logging.info(video_id_batch_val_tot.shape)
+        logging.info(labels_val_tot.shape)
         with gfile.Open(out_file_location + 'id/' + 'dobf' + '_id' + str(file_num)+'.npy', "w+") as out_file:
           np.save(out_file, video_id_batch_val)
         with gfile.Open(out_file_location + 'feature/' + 'dobf' + '_feature' + str(file_num)+'.npy', "w+") as out_file:
