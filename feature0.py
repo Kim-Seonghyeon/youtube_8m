@@ -138,7 +138,6 @@ def inference(reader, train_dir, data_pattern, out_file_location, batch_size, to
     try:
       while not coord.should_stop():
         video_id_batch_val_tot = []
-        feature_val_tot = []
         labels_val_tot = []
         for i in range(128):
           video_id_batch_val, video_batch_val,num_frames_batch_val, labels_val = sess.run([video_id_batch, video_batch, num_frames_batch, label_batch])
@@ -147,7 +146,6 @@ def inference(reader, train_dir, data_pattern, out_file_location, batch_size, to
 
           now = time.time()
           num_examples_processed += len(video_batch_val)
-          num_classes = feature1_val.shape[1]
           logging.info("num examples processed: " + str(num_examples_processed) + " elapsed seconds: " + "{0:.2f}".format(now-start_time))
         logging.info(file_num)
         video_id_batch_val_tot = np.concatenate(video_id_batch_val_tot, axis=0)
