@@ -132,24 +132,7 @@ class DnnModel(models.BaseModel):
       model in the 'predictions' key. The dimensions of the tensor are
       batch_size x num_classes.
     """
-    hid_1_activations = slim.fully_connected(
-        model_input,
-        hidden_size,
-        activation_fn=tf.nn.relu6,
-        biases_initializer=None,
+    output = slim.fully_connected(
+        model_input, vocab_size, activation_fn=tf.nn.sigmoid,
         weights_regularizer=slim.l2_regularizer(l2_penalty))
-    hid_2_activations = slim.fully_connected(
-        hid_1_activations,
-        hidden_size,
-        activation_fn=tf.nn.relu6,
-        biases_initializer=None,
-        weights_regularizer=slim.l2_regularizer(l2_penalty))
-    predictions = slim.fully_connected(
-        hid_2_activations,
-        vocab_size,
-        activation_fn=tf.nn.sigmoid,
-        biases_initializer=None,
-        weights_regularizer=slim.l2_regularizer(l2_penalty))
-
-
-    return {"predictions": predictions}
+    return {"predictions": output}
