@@ -50,22 +50,22 @@ if __name__ == "__main__":
 
   # Model flags.
   flags.DEFINE_bool(
-      "frame_features", True,
+      "frame_features", False,
       "If set, then --train_data_pattern must be frame-level features. "
       "Otherwise, --train_data_pattern must be aggregated video-level "
       "features. The model must also be set appropriately (i.e. to read 3D "
       "batches VS 4D batches.")
   flags.DEFINE_string(
-      "model", "LstmModel",
+      "model", "DbofModel",
       "Which architecture to use for the model. Models are defined "
       "in models.py.")
   flags.DEFINE_bool(
-      "start_new_model", True,
+      "start_new_model", False,
       "If set, this will not resume from a checkpoint and will instead create a"
       " new model instance.")
 
   # Training flags.
-  flags.DEFINE_integer("batch_size", 32,
+  flags.DEFINE_integer("batch_size", 128,
                        "How many examples to process per batch for training.")
   flags.DEFINE_string("label_loss", "CrossEntropyLoss",
                       "Which loss function to use for training the model.")
@@ -73,12 +73,12 @@ if __name__ == "__main__":
       "regularization_penalty", 1.0,
       "How much weight to give to the regularization loss (the label loss has "
       "a weight of 1).")
-  flags.DEFINE_float("base_learning_rate", 0.001,
+  flags.DEFINE_float("base_learning_rate", 0.01,
                      "Which learning rate to start with.")
-  flags.DEFINE_float("learning_rate_decay", 0.8,
+  flags.DEFINE_float("learning_rate_decay", 0.95,
                      "Learning rate decay factor to be applied every "
                      "learning_rate_decay_examples.")
-  flags.DEFINE_float("learning_rate_decay_examples", 100,
+  flags.DEFINE_float("learning_rate_decay_examples", 4000000,
                      "Multiply current learning rate by learning_rate_decay "
                      "every learning_rate_decay_examples.")
   flags.DEFINE_integer("num_epochs", 5,
@@ -438,12 +438,7 @@ class Trainer(object):
    
             example_splits_mean = [np.mean(example_split,0) for example_split in example_splits ]
             example_splits_mean = np.stack(example_splits_mean, 0)
-
-            sh = list(example_splits_mean.shape)
-            sh2 = np.min(np.array([FLAGS.max_scene,sh[0]]))
-            pr_num.append(sh2)
-            sh[0] = FLAGS.max_scene - sh2
-            example_splits_mean = np.concatenate([example_splits_mean[:sh2], np.zeros(sh)], 0)
+            pr_num.append(FLAGS.max_scene)
             pr_feature.append(example_splits_mean)
           pr_feature=np.stack(pr_feature, 0)
           pr_num=np.stack(pr_num, 0)
