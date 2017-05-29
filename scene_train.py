@@ -50,7 +50,7 @@ if __name__ == "__main__":
 
   # Model flags.
   flags.DEFINE_bool(
-      "frame_features", False,
+      "frame_features", True,
       "If set, then --train_data_pattern must be frame-level features. "
       "Otherwise, --train_data_pattern must be aggregated video-level "
       "features. The model must also be set appropriately (i.e. to read 3D "
