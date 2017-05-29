@@ -27,7 +27,7 @@ flags.DEFINE_integer(
     "moe_num_mixtures", 1,
     "The number of mixtures (excluding the dummy 'expert') used for MoeModel.")
 
-class LogisticModel(models.BaseModel):
+class DnnModel(models.BaseModel):
   """Logistic model with L2 regularization."""
 
   def create_model(self, model_input, vocab_size, l2_penalty=1e-8, **unused_params):
@@ -105,7 +105,7 @@ class MoeModel(models.BaseModel):
 
 
 
-class DnnModel(models.BaseModel):
+class LogisticModel(models.BaseModel):
   """A softmax over a mixture of logistic models (with L2 regularization)."""
 
   def create_model(self,
