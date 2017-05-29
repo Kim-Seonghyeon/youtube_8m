@@ -421,9 +421,17 @@ class Trainer(object):
           pr_num=[]
 
           for i in range(model_input_raw_val.shape[0]):
-            idx = np.floor(np.arange(1,FLAGS.max_scene,dtype=np.float32) / FLAGS.max.scene * num_frames_val[i]).astype(np.int32)
+            if num_frames_val[i]/FLAGS.max_scene<= 2:
+              num_tmp  = num_frames_val[i] * np.ceil(1+FLAGS.max_scene/num_frames_val[i])
+              input_tmp = np.model_input_raw_val[i][:num_frames_val[i]]
+              input_tmp = np.repeat(input_tmp,np.ceil(1+FLAGS.max_scene/num_frames_val[i]),0)
+            else:
+              num_tmp  = num_frames_val[i]
+              input_tmp = model_input_raw_val[i][:num_tmp]
 
-            example_splits = np.split(model_input_raw_val[i][:num_frames_val[i]], idx,0)
+
+            idx = np.floor(np.arange(1,FLAGS.max_scene,dtype=np.float32) / FLAGS.max_scene * num_tmp).astype(np.int32)
+            example_splits = np.split(input_tmp, idx,0)
    
             example_splits_mean = [np.mean(example_split,0) for example_split in example_splits ]
             example_splits_mean = np.stack(example_splits_mean, 0)
@@ -431,7 +439,6 @@ class Trainer(object):
             pr_feature.append(example_splits_mean)
           pr_feature=np.stack(pr_feature, 0)
           pr_num=np.stack(pr_num, 0)
-
 
 
           _, global_step_val, loss_val, predictions_val, labels_val = sess.run(
