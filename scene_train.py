@@ -433,7 +433,7 @@ class Trainer(object):
           for i in range(model_input_raw_val.shape[0]):
             if num_frames_val[i]/FLAGS.max_scene<= 2:
               num_tmp  = num_frames_val[i] * np.ceil(1+FLAGS.max_scene/num_frames_val[i])
-              input_tmp = np.model_input_raw_val[i][:num_frames_val[i]]
+              input_tmp = model_input_raw_val[i][:num_frames_val[i]]
               input_tmp = np.repeat(input_tmp,np.ceil(1+FLAGS.max_scene/num_frames_val[i]),0)
             else:
               num_tmp  = num_frames_val[i]
