@@ -432,11 +432,8 @@ class Trainer(object):
 
           for i in range(model_input_raw_val.shape[0]):
             numvec = (model_input_raw_val[i][1:num_frames_val[i]] *model_input_raw_val[i][0:num_frames_val[i]-1]).sum(axis=1)/(np.sqrt((model_input_raw_val[i][1:num_frames_val[i]]**2).sum(1))*(np.sqrt((model_input_raw_val[i][0:num_frames_val[i]-1]**2).sum(1))))
-            scene = (numvec<0.25)
-            if np.sum(scene) > FLAGS.max_scene:
-              idx = np.sort(numvec.argpartition(FLAGS.max_scene)[:FLAGS.max_scene]+1)
-            else:
-              idx = np.where(scene)[0]+1
+            idx = np.sort(numvec.argpartition(FLAGS.max_scene)[:FLAGS.max_scene]+1)
+
             example_splits = np.split(model_input_raw_val[i][:num_frames_val[i]], idx,0)
    
             example_splits_mean = [np.mean(example_split,0) for example_split in example_splits ]
