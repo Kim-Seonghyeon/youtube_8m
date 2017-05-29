@@ -137,22 +137,19 @@ class DnnModel(models.BaseModel):
         hidden_size,
         activation_fn=tf.nn.relu6,
         biases_initializer=None,
-        weights_regularizer=slim.l2_regularizer(l2_penalty),
-        scope="hid_1")
+        weights_regularizer=slim.l2_regularizer(l2_penalty))
     hid_2_activations = slim.fully_connected(
         hid_1_activations,
         hidden_size,
         activation_fn=tf.nn.relu6,
         biases_initializer=None,
-        weights_regularizer=slim.l2_regularizer(l2_penalty),
-        scope="hid_2")
+        weights_regularizer=slim.l2_regularizer(l2_penalty))
     predictions = slim.fully_connected(
         hid_2_activations,
         vocab_size,
         activation_fn=tf.nn.sigmoid,
         biases_initializer=None,
-        weights_regularizer=slim.l2_regularizer(l2_penalty),
-        scope="output")
+        weights_regularizer=slim.l2_regularizer(l2_penalty))
 
 
     return {"predictions": predictions}
