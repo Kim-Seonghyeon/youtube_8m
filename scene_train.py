@@ -432,7 +432,7 @@ class Trainer(object):
 
           for i in range(model_input_raw_val.shape[0]):
             numvec = (model_input_raw_val[i][1:num_frames_val[i]] *model_input_raw_val[i][0:num_frames_val[i]-1]).sum(axis=1)/(np.sqrt((model_input_raw_val[i][1:num_frames_val[i]]**2).sum(1))*(np.sqrt((model_input_raw_val[i][0:num_frames_val[i]-1]**2).sum(1))))
-            idx = np.sort(numvec.argpartition(FLAGS.max_scene)[:FLAGS.max_scene]+1)
+            idx = np.sort(numvec.argpartition(FLAGS.max_scene)[:FLAGS.max_scene-1]+1)
 
             example_splits = np.split(model_input_raw_val[i][:num_frames_val[i]], idx,0)
    
