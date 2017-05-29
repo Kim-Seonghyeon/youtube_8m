@@ -132,8 +132,6 @@ class DnnModel(models.BaseModel):
       model in the 'predictions' key. The dimensions of the tensor are
       batch_size x num_classes.
     """
-    num_mixtures = num_mixtures or FLAGS.moe_num_mixtures
-
     hid_1_activations = slim.fully_connected(
         model_input,
         hidden_size,
