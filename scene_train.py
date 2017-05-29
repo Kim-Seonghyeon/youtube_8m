@@ -431,10 +431,18 @@ class Trainer(object):
           pr_num=[]
 
           for i in range(model_input_raw_val.shape[0]):
-            numvec = (model_input_raw_val[i][1:num_frames_val[i]] *model_input_raw_val[i][0:num_frames_val[i]-1]).sum(axis=1)/(np.sqrt((model_input_raw_val[i][1:num_frames_val[i]]**2).sum(1))*(np.sqrt((model_input_raw_val[i][0:num_frames_val[i]-1]**2).sum(1))))
-            idx = np.sort(numvec.argpartition(FLAGS.max_scene)[:FLAGS.max_scene-1]+1)
+            if num_frames_val[i]/FLAGS.max_scene<= 2:
+              num_tmp  = num_frames_val[i] * np.ceil(1+FLAGS.max_scene/num_frames_val[i])
+              input_tmp = np.model_input_raw_val[i][:num_frames_val[i]]
+              input_tmp = np.repeat(input_tmp,np.ceil(1+FLAGS.max_scene/num_frames_val[i]),0)
+            else:
+              num_tmp  = num_frames_val[i]
+              input_tmp = model_input_raw_val[i][:num_tmp]
 
-            example_splits = np.split(model_input_raw_val[i][:num_frames_val[i]], idx,0)
+            numvec = (input_tmp[1:] *input_tmp[:-1]).sum(axis=1)/(np.sqrt((input_tmp[1:]**2).sum(1))*(np.sqrt((input_tmp[:-1]**2).sum(1))))
+            idx = np.sort(numvec.argpartition(FLAGS.max_scene-1)[:FLAGS.max_scene-1]+1)
+
+            example_splits = np.split(input_tmp, idx,0)
    
             example_splits_mean = [np.mean(example_split,0) for example_split in example_splits ]
             example_splits_mean = np.stack(example_splits_mean, 0)
