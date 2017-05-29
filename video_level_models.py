@@ -101,3 +101,60 @@ class MoeModel(models.BaseModel):
     final_probabilities = tf.reshape(final_probabilities_by_class_and_batch,
                                      [-1, vocab_size])
     return {"predictions": final_probabilities}
+
+
+
+
+class DnnModel(models.BaseModel):
+  """A softmax over a mixture of logistic models (with L2 regularization)."""
+
+  def create_model(self,
+                   model_input,
+                   vocab_size,
+                   hidden_size=2024,
+                   l2_penalty=1e-8,
+                   **unused_params):
+    """Creates a Mixture of (Logistic) Experts model.
+
+     The model consists of a per-class softmax distribution over a
+     configurable number of logistic classifiers. One of the classifiers in the
+     mixture is not trained, and always predicts 0.
+
+    Args:
+      model_input: 'batch_size' x 'num_features' matrix of input features.
+      vocab_size: The number of classes in the dataset.
+      num_mixtures: The number of mixtures (excluding a dummy 'expert' that
+        always predicts the non-existence of an entity).
+      l2_penalty: How much to penalize the squared magnitudes of parameter
+        values.
+    Returns:
+      A dictionary with a tensor containing the probability predictions of the
+      model in the 'predictions' key. The dimensions of the tensor are
+      batch_size x num_classes.
+    """
+    num_mixtures = num_mixtures or FLAGS.moe_num_mixtures
+
+    hid_1_activations = slim.fully_connected(
+        model_input,
+        hidden_size,
+        activation_fn=tf.nn.relu6,
+        biases_initializer=None,
+        weights_regularizer=slim.l2_regularizer(l2_penalty),
+        scope="hid_1")
+    hid_2_activations = slim.fully_connected(
+        hid_1_activations,
+        hidden_size,
+        activation_fn=tf.nn.relu6,
+        biases_initializer=None,
+        weights_regularizer=slim.l2_regularizer(l2_penalty),
+        scope="hid_2")
+    predictions = slim.fully_connected(
+        hid_2_activations,
+        vocab_size,
+        activation_fn=tf.nn.sigmoid,
+        biases_initializer=None,
+        weights_regularizer=slim.l2_regularizer(l2_penalty),
+        scope="output")
+
+
+    return {"predictions": predictions}
