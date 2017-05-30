@@ -35,16 +35,7 @@ class DnnModel(models.BaseModel):
                    vocab_size,
                    l2_penalty=1e-8,
                    hidden_size=2048,
-                   **unused_params):    """Creates a logistic model.
-
-    Args:
-      model_input: 'batch' x 'num_features' matrix of input features.
-      vocab_size: The number of classes in the dataset.
-
-    Returns:
-      A dictionary with a tensor containing the probability predictions of the
-      model in the 'predictions' key. The dimensions of the tensor are
-      batch_size x num_classes."""
+                   **unused_params):
     hid_1_activations = slim.fully_connected(
         model_input,
         hidden_size,
