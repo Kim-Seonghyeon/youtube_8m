@@ -26,6 +26,9 @@ FLAGS = flags.FLAGS
 flags.DEFINE_integer(
     "moe_num_mixtures", 1,
     "The number of mixtures (excluding the dummy 'expert') used for MoeModel.")
+flags.DEFINE_integer(
+    "hidden_size", 2048,
+    "The number of mixtures (excluding the dummy 'expert') used for MoeModel.")
 
 class DnnModel(models.BaseModel):
   """Logistic model with L2 regularization."""
@@ -36,6 +39,10 @@ class DnnModel(models.BaseModel):
                    l2_penalty=1e-8,
                    hidden_size=2048,
                    **unused_params):
+
+        
+    hidden_size = hidden_size or FLAGS.hidden_size
+
     hid_1_activations = slim.fully_connected(
         model_input,
         hidden_size,
@@ -48,8 +55,14 @@ class DnnModel(models.BaseModel):
         activation_fn=tf.nn.relu6,
         biases_initializer=None,
         weights_regularizer=slim.l2_regularizer(l2_penalty))
-    predictions = slim.fully_connected(
+    hid_3_activations = slim.fully_connected(
         hid_2_activations,
+        hidden_size,
+        activation_fn=tf.nn.relu6,
+        biases_initializer=None,
+        weights_regularizer=slim.l2_regularizer(l2_penalty))
+    predictions = slim.fully_connected(
+        hid_3_activations,
         vocab_size,
         activation_fn=tf.nn.sigmoid,
         biases_initializer=None,
