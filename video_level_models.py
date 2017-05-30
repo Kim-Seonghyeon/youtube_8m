@@ -33,8 +33,8 @@ class DnnModel(models.BaseModel):
   def create_model(self,
                    model_input,
                    vocab_size,
-                   hidden_size=2048,
                    l2_penalty=1e-8,
+                   hidden_size=2048,
                    **unused_params):    """Creates a logistic model.
 
     Args:
