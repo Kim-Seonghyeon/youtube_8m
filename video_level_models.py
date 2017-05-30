@@ -27,7 +27,7 @@ flags.DEFINE_integer(
     "moe_num_mixtures", 1,
     "The number of mixtures (excluding the dummy 'expert') used for MoeModel.")
 flags.DEFINE_integer(
-    "hidden_size", 2048,
+    "hidden_size", 4096,
     "The number of mixtures (excluding the dummy 'expert') used for MoeModel.")
 
 class DnnModel(models.BaseModel):
@@ -37,7 +37,7 @@ class DnnModel(models.BaseModel):
                    model_input,
                    vocab_size,
                    l2_penalty=1e-8,
-                   hidden_size=2048,
+                   hidden_size=4096,
                    **unused_params):
 
         
