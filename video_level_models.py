@@ -30,8 +30,12 @@ flags.DEFINE_integer(
 class DnnModel(models.BaseModel):
   """Logistic model with L2 regularization."""
 
-  def create_model(self, model_input, vocab_size, l2_penalty=1e-8, **unused_params):
-    """Creates a logistic model.
+  def create_model(self,
+                   model_input,
+                   vocab_size,
+                   hidden_size=2048,
+                   l2_penalty=1e-8,
+                   **unused_params):    """Creates a logistic model.
 
     Args:
       model_input: 'batch' x 'num_features' matrix of input features.
